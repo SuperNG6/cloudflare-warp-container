@@ -8,9 +8,9 @@ warp-cli --accept-tos status
 
 if ([ "$WARP_TEAMS_ACCESS_CLIENT_ID"     != "" ] &&
     [ "$WARP_TEAMS_ACCESS_CLIENT_SECRET" != "" ]); then
-  warp-cli --accept-tos teams-enroll                            \
-    --access-client-id "$WARP_TEAMS_ACCESS_CLIENT_ID"	        \
-    --access-client-secret "$WARP_TEAMS_ACCESS_CLIENT_SECRET"   \
+    warp-cli --accept-tos teams-enroll \
+    --access-client-id "$WARP_TEAMS_ACCESS_CLIENT_ID" \
+    --access-client-secret "$WARP_TEAMS_ACCESS_CLIENT_SECRET" \
 
 elif [ "$WARP_MANUAL" == "" ]; then
   warp-cli --accept-tos register
