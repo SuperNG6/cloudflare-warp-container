@@ -1,75 +1,38 @@
-name: Container Images
+name: Manual Build Docker Image
+
 on:
   push:
-    branches:
-      - master
-      - main
-    tags:
-      - v*
-  pull_request:
+    paths:
+      - "ReleaseTag"
+  workflow_dispatch:
 
 jobs:
-  container_image:
+  buildx:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: docker/metadata-action@v3
-        id: meta-centos
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
         with:
-          images: |
-            ghcr.io/${{ github.repository }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          
+
+      # Build and push
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          push: true
           tags: |
-            type=ref,event=branch,prefix=centos-
-            type=ref,event=pr,prefix=centos-
-            type=semver,pattern={{version}},prefix=centos-
-            type=semver,pattern={{major}}.{{minor}},prefix=centos-
-            type=semver,pattern={{major}},prefix=centos-
-            type=sha,prefix=centos-
-          labels: |
-            org.opencontainers.image.licenses=AGPL-3.0
-          flavor: |
-            latest=false
-            prefix=centos-
-      - uses: docker/metadata-action@v3
-        id: meta-debian
-        with:
-          images: |
-            ghcr.io/${{ github.repository }}
-          tags: |
-            type=ref,event=branch,prefix=debian-
-            type=ref,event=pr,prefix=debian-
-            type=semver,pattern={{version}},prefix=debian-
-            type=semver,pattern={{major}}.{{minor}},prefix=debian-
-            type=semver,pattern={{major}},prefix=debian-
-            type=sha,prefix=debian-
-          labels: |
-            org.opencontainers.image.licenses=AGPL-3.0
-          flavor: |
-            latest=true
-            prefix=debian-
-      - uses: docker/setup-qemu-action@v1
-      - uses: docker/setup-buildx-action@v1
-      - uses: docker/login-action@v1
-        if: ${{ github.event_name != 'pull_request' }}
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/build-push-action@v2
-        id: build-push-centos
-        with:
-          context: .
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta-centos.outputs.tags }}
-          labels: ${{ steps.meta-centos.outputs.labels }}
-          platforms: linux/amd64
-          file: Dockerfile.centos
-      - uses: docker/build-push-action@v2
-        id: build-push-debian
-        with:
-          context: .
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta-debian.outputs.tags }}
-          labels: ${{ steps.meta-debian.outputs.labels }}
-          platforms: linux/amd64
-          file: Dockerfile.debian
+            superng6/warp-socks:${{ steps.set-version.outputs.version }}
+            superng6/warp-socks:latest

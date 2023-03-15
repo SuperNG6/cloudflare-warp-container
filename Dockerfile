@@ -1,13 +1,14 @@
-# -*- mode: Dockerfile;-*-
-FROM debian
-LABEL maintainer="kabir@kwatra.me"
+FROM debian:11-slim
+LABEL maintainer="NG6"
 ENV WARP_PROXY_PORT=40001
 
-RUN apt-get update && apt-get install -y \
-  curl                                   \
-  gnupg                                  \
-  socat                                  \
-  && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y curl socat \
+    echo "**** cleanup ****" && \
+    apt-get clean && \
+    rm -rf \
+        /tmp/* \
+        /var/lib/apt/lists/* \
+        /var/tmp/*
 
 RUN curl https://pkg.cloudflareclient.com/pubkey.gpg | apt-key add -       \
     && echo 'deb http://pkg.cloudflareclient.com/'                         \
@@ -18,7 +19,7 @@ RUN apt-get update && apt-get install -y \
   cloudflare-warp;                       \
   rm -rf /var/lib/apt/lists/*
 
-RUN mkdir --parents /var/lib/cloudflare-warp
+RUN mkdir -p /var/lib/cloudflare-warp
 RUN echo '{"always_on": true, "operation_mode": "WarpProxy"}' > /var/lib/cloudflare-warp/settings.json
 
 COPY warp-init.sh /
