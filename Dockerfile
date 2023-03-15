@@ -2,7 +2,7 @@ FROM debian:11-slim
 LABEL maintainer="NG6"
 ENV WARP_PROXY_PORT=40001
 
-RUN apt-get update && apt-get install -y curl socat && \
+RUN apt-get update && apt-get install -y curl gnupg lsb-release socat && \
     echo "**** cleanup ****" && \
     apt-get clean && \
     rm -rf \
